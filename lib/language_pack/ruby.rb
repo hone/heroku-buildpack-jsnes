@@ -8,8 +8,6 @@ class LanguagePack::Ruby < LanguagePack::Base
   LIBYAML_PATH        = "libyaml-#{LIBYAML_VERSION}"
   BUNDLER_VERSION     = "1.1.rc"
   BUNDLER_GEM_PATH    = "bundler-#{BUNDLER_VERSION}"
-  NODE_VERSION        = "0.4.7"
-  NODE_JS_BINARY_PATH = "node-#{NODE_VERSION}"
   JSNES_GIT_URL       = "https://github.com/hone/jsnes.git"
 
   # detects if this is a valid Ruby app
@@ -23,7 +21,7 @@ class LanguagePack::Ruby < LanguagePack::Base
   end
 
   def default_addons
-    add_shared_database_addon
+    []
   end
 
   def default_config_vars
@@ -49,9 +47,7 @@ class LanguagePack::Ruby < LanguagePack::Base
       setup_jsnes
       install_language_pack_gems
       build_bundler
-      create_database_yml
       install_binaries
-      allow_git { run_assets_precompile_rake_task }
       run_jake
     end
   end
@@ -167,7 +163,7 @@ ERROR
   # default set of binaries to install
   # @return [Array] resulting list
   def binaries
-    add_node_js_binary
+    []
   end
 
   # vendors binaries into the slug
@@ -264,61 +260,6 @@ ERROR
     end
   end
 
-  # writes ERB based database.yml for Rails. The database.yml uses the DATABASE_URL from the environment during runtime.
-  def create_database_yml
-    log("create_database_yml") do
-      return unless File.directory?("config")
-      topic("Writing config/database.yml to read from DATABASE_URL")
-      File.open("config/database.yml", "w") do |file|
-        file.puts <<-DATABASE_YML
-<%
-
-require 'cgi'
-require 'uri'
-
-begin
-  uri = URI.parse(ENV["DATABASE_URL"])
-rescue URI::InvalidURIError
-  raise "Invalid DATABASE_URL"
-end
-
-raise "No RACK_ENV or RAILS_ENV found" unless ENV["RAILS_ENV"] || ENV["RACK_ENV"]
-
-def attribute(name, value)
-  value ? "\#{name}: \#{value}" : ""
-end
-
-adapter = uri.scheme
-adapter = "postgresql" if adapter == "postgres"
-
-database = (uri.path || "").split("/")[1]
-
-username = uri.user
-password = uri.password
-
-host = uri.host
-port = uri.port
-
-params = CGI.parse(uri.query || "")
-
-%>
-
-<%= ENV["RAILS_ENV"] || ENV["RACK_ENV"] %>:
-  <%= attribute "adapter",  adapter %>
-  <%= attribute "database", database %>
-  <%= attribute "username", username %>
-  <%= attribute "password", password %>
-  <%= attribute "host",     host %>
-  <%= attribute "port",     port %>
-
-<% params.each do |key, value| %>
-  <%= key %>: <%= value.first %>
-<% end %>
-        DATABASE_YML
-      end
-    end
-  end
-
   # add bundler to the load path
   # @note it sets a flag, so the path can only be loaded once
   def add_bundler_to_load_path
@@ -364,26 +305,6 @@ params = CGI.parse(uri.query || "")
     git_dir = ENV.delete("GIT_DIR") # can mess with bundler
     blk.call
     ENV["GIT_DIR"] = git_dir
-  end
-
-  # decides if we need to enable the shared database addon
-  # @return [Array] the database addon if the pg gem is detected or an empty Array if it isn't.
-  def add_shared_database_addon
-    gem_is_bundled?("pg") ? ['shared-database:5mb'] : []
-  end
-
-  # decides if we need to install the node.js binary
-  # @note execjs will blow up if no JS RUNTIME is detected and is loaded.
-  # @return [Array] the node.js binary path if we need it or an empty Array
-  def add_node_js_binary
-    gem_is_bundled?('execjs') ? [NODE_JS_BINARY_PATH] : []
-  end
-
-  def run_assets_precompile_rake_task
-    if rake_task_defined?("assets:precompile")
-      topic "Running: rake assets:precompile"
-      pipe("env PATH=$PATH:bin bundle exec rake assets:precompile 2>&1")
-    end
   end
 
   # clones the jsnes git repo and copies the roms into the right directory
