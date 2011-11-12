@@ -19,5 +19,4 @@ module LanguagePack
 end
 
 require "language_pack/ruby"
-require "language_pack/rack"
 
