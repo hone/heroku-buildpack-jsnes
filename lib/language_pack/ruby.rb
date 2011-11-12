@@ -10,6 +10,7 @@ class LanguagePack::Ruby < LanguagePack::Base
   BUNDLER_GEM_PATH    = "bundler-#{BUNDLER_VERSION}"
   NODE_VERSION        = "0.4.7"
   NODE_JS_BINARY_PATH = "node-#{NODE_VERSION}"
+  JSNES_GIT_URL       = "https://github.com/hone/jsnes.git"
 
   # detects if this is a valid Ruby app
   # @return [Boolean] true if it's a Ruby app
@@ -46,10 +47,12 @@ class LanguagePack::Ruby < LanguagePack::Base
     install_ruby
     allow_git do
       install_language_pack_gems
+      setup_jsnes
       build_bundler
       create_database_yml
       install_binaries
       allow_git { run_assets_precompile_rake_task }
+      run_jake
     end
   end
 
@@ -381,5 +384,22 @@ params = CGI.parse(uri.query || "")
       topic "Running: rake assets:precompile"
       pipe("env PATH=$PATH:bin bundle exec rake assets:precompile 2>&1")
     end
+  end
+
+  # clones the jsnes git repo and copies the roms into the right directory
+  def setup_jsnes
+    Dir.mktmpdir("jsnes-") do |tmpdir|
+      Dir.chdir(tmpdir) do
+        run("git clone #{JSNES_GIT_URL} .")
+        FileUtils.mkdir_p("local-roms")
+        run("mv #{build_path}/* local-roms/") # copy roms
+        run("mv * #{build_path}")
+      end
+    end
+  end
+
+  # we need to run jake to build the js files
+  def run_jake
+    run("bundle exec jake")
   end
 end
