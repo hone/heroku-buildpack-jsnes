@@ -246,6 +246,7 @@ ERROR
 
   # we need to run jake to build the js files
   def run_jake
-    run("bundle exec jake")
+    topic("Running jake")
+    pipe("bundle exec jake")
   end
 end
