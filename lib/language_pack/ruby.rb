@@ -8,10 +8,10 @@ class LanguagePack::Ruby < LanguagePack::Base
   BUNDLER_GEM_PATH    = "bundler-#{BUNDLER_VERSION}"
   JSNES_GIT_URL       = "https://github.com/hone/jsnes.git"
 
-  # detects if this is a valid Ruby app
-  # @return [Boolean] true if it's a Ruby app
+  # detects if this is a valid JSNES app
+  # @return [Boolean] always true
   def self.use?
-    File.exist?("Gemfile")
+    true
   end
 
   def name
