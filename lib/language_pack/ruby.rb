@@ -46,8 +46,8 @@ class LanguagePack::Ruby < LanguagePack::Base
     setup_language_pack_environment
     install_ruby
     allow_git do
-      install_language_pack_gems
       setup_jsnes
+      install_language_pack_gems
       build_bundler
       create_database_yml
       install_binaries
