@@ -19,7 +19,7 @@ class LanguagePack::Ruby < LanguagePack::Base
   end
 
   def name
-    "Ruby"
+    "JSNES"
   end
 
   def default_addons

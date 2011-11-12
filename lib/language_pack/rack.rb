@@ -11,7 +11,7 @@ class LanguagePack::Rack < LanguagePack::Ruby
   end
 
   def name
-    "Ruby/Rack"
+    "JSNES"
   end
 
   def default_config_vars
