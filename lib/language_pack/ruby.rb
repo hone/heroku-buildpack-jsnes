@@ -27,13 +27,13 @@ class LanguagePack::Ruby < LanguagePack::Base
       "LANG"     => "en_US.UTF-8",
       "PATH"     => default_path,
       "GEM_PATH" => slug_vendor_base,
+      "RACK_ENV" => "production"
     }
   end
 
   def default_process_types
     {
-      "rake"    => "bundle exec rake",
-      "console" => "bundle exec irb"
+      "web" => "bundle exec rackup config.ru -p $PORT"
     }
   end
 

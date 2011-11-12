@@ -9,7 +9,7 @@ module LanguagePack
   def self.detect(*args)
     Dir.chdir(args.first)
 
-    pack = [ Rack ].detect do |klass|
+    pack = [ Ruby ].detect do |klass|
       klass.use?
     end
 
