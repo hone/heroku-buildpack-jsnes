@@ -4,8 +4,6 @@ require "language_pack/base"
 
 # base Ruby Language Pack. This is for any base ruby app.
 class LanguagePack::Ruby < LanguagePack::Base
-  LIBYAML_VERSION     = "0.1.4"
-  LIBYAML_PATH        = "libyaml-#{LIBYAML_VERSION}"
   BUNDLER_VERSION     = "1.1.rc"
   BUNDLER_GEM_PATH    = "bundler-#{BUNDLER_VERSION}"
   JSNES_GIT_URL       = "https://github.com/hone/jsnes.git"
@@ -189,15 +187,6 @@ ERROR
     FileUtils.rm File.join('bin', File.basename(path)), :force => true
   end
 
-  # install libyaml into the LP to be referenced for psych compilation
-  # @param [String] tmpdir to store the libyaml files
-  def install_libyaml(dir)
-    FileUtils.mkdir_p dir
-    Dir.chdir(dir) do |dir|
-      run("curl #{VENDOR_URL}/#{LIBYAML_PATH}.tgz -s -o - | tar xzf -")
-    end
-  end
-
   # runs bundler to install the dependencies
   def build_bundler
     log("bundle") do
@@ -222,20 +211,12 @@ ERROR
       version = run("bundle version").strip
       topic("Installing dependencies using #{version}")
 
-      Dir.mktmpdir("libyaml-") do |tmpdir|
-        libyaml_dir = "#{tmpdir}/#{LIBYAML_PATH}"
-        install_libyaml(libyaml_dir)
-
-        # need to setup compile environment for the psych gem
-        yaml_include   = File.expand_path("#{libyaml_dir}/include")
-        yaml_lib       = File.expand_path("#{libyaml_dir}/lib")
-        pwd            = run("pwd").chomp
-        # we need to set BUNDLE_CONFIG and BUNDLE_GEMFILE for
-        # codon since it uses bundler.
-        env_vars       = "env BUNDLE_GEMFILE=#{pwd}/Gemfile BUNDLE_CONFIG=#{pwd}/.bundle/config CPATH=#{yaml_include}:$CPATH CPPATH=#{yaml_include}:$CPPATH LIBRARY_PATH=#{yaml_lib}:$LIBRARY_PATH"
-        puts "Running: #{bundle_command}"
-        pipe("#{env_vars} #{bundle_command} --no-clean 2>&1")
-      end
+      pwd            = run("pwd").chomp
+      # we need to set BUNDLE_CONFIG and BUNDLE_GEMFILE for
+      # codon since it uses bundler.
+      env_vars       = "env BUNDLE_GEMFILE=#{pwd}/Gemfile BUNDLE_CONFIG=#{pwd}/.bundle/config"
+      puts "Running: #{bundle_command}"
+      pipe("#{env_vars} #{bundle_command} --no-clean 2>&1")
 
       if $?.success?
         log "bundle", :status => "success"
