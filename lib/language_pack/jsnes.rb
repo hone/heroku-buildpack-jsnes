@@ -2,8 +2,8 @@ require "tmpdir"
 require "language_pack"
 require "language_pack/base"
 
-# base Ruby Language Pack. This is for any base ruby app.
-class LanguagePack::Ruby < LanguagePack::Base
+# base JSNES Language Pack. This is for any base ruby app.
+class LanguagePack::JSNES < LanguagePack::Base
   BUNDLER_VERSION     = "1.1.rc"
   BUNDLER_GEM_PATH    = "bundler-#{BUNDLER_VERSION}"
   JSNES_GIT_URL       = "https://github.com/hone/jsnes.git"
