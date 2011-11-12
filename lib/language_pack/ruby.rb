@@ -190,22 +190,9 @@ ERROR
   # runs bundler to install the dependencies
   def build_bundler
     log("bundle") do
-      bundle_without = ENV["BUNDLE_WITHOUT"] || "development:test"
-      bundle_command = "bundle install --without #{bundle_without} --path vendor/bundle"
+      bundle_command = "bundle install --deployment"
 
-      unless File.exist?("Gemfile.lock")
-        error "Gemfile.lock is required. Please run \"bundle install\" locally\nand commit your Gemfile.lock."
-      end
-
-      if has_windows_gemfile_lock?
-        log("bundle", "has_windows_gemfile_lock")
-        File.unlink("Gemfile.lock")
-      else
-        # using --deployment is preferred if we can
-        bundle_command += " --deployment"
-        cache_load ".bundle"
-      end
-
+      cache_load ".bundle"
       cache_load "vendor/bundle"
 
       version = run("bundle version").strip
@@ -216,61 +203,18 @@ ERROR
       # codon since it uses bundler.
       env_vars       = "env BUNDLE_GEMFILE=#{pwd}/Gemfile BUNDLE_CONFIG=#{pwd}/.bundle/config"
       puts "Running: #{bundle_command}"
-      pipe("#{env_vars} #{bundle_command} --no-clean 2>&1")
+      pipe("#{env_vars} #{bundle_command} 2>&1")
 
       if $?.success?
         log "bundle", :status => "success"
-        puts "Cleaning up the bundler cache."
-        run "bundle clean"
         cache_store ".bundle"
         cache_store "vendor/bundle"
       else
         log "bundle", :status => "failure"
         error_message = "Failed to install gems via Bundler."
-        if gem_is_bundled?("sqlite3")
-          error_message += <<ERROR
-
-
-Detected sqlite3 gem which is not supported on Heroku.
-http://devcenter.heroku.com/articles/how-do-i-use-sqlite3-for-development
-ERROR
-        end
-
         error error_message
       end
     end
-  end
-
-  # add bundler to the load path
-  # @note it sets a flag, so the path can only be loaded once
-  def add_bundler_to_load_path
-    return if @bundler_loadpath
-    $: << File.expand_path(Dir["#{slug_vendor_base}/gems/bundler*/lib"].first)
-    @bundler_loadpath = true
-  end
-
-  # detects whether the Gemfile.lock contains the Windows platform
-  # @return [Boolean] true if the Gemfile.lock was created on Windows
-  def has_windows_gemfile_lock?
-    lockfile_parser.platforms.detect do |platform|
-      /mingw|mswin/.match(platform.os) if platform.is_a?(Gem::Platform)
-    end
-  end
-
-  # detects if a gem is in the bundle.
-  # @param [String] name of the gem in question
-  # @return [String, nil] if it finds the gem, it will return the line from bundle show or nil if nothing is found.
-  def gem_is_bundled?(gem)
-    @bundler_gems ||= lockfile_parser.specs.map(&:name)
-    @bundler_gems.include?(gem)
-  end
-
-  # setup the lockfile parser
-  # @return [Bundler::LockfileParser] a Bundler::LockfileParser
-  def lockfile_parser
-    add_bundler_to_load_path
-    require "bundler"
-    @lockfile_parser ||= Bundler::LockfileParser.new(File.read("Gemfile.lock"))
   end
 
   # detects if a rake task is defined in the app
