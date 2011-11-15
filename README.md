@@ -13,7 +13,7 @@ Example Usage:
     $ ls
     game.nes
 
-    $ heroku create --stack cedar --buildpack http://github.com/hone/heroku-buildpack-jnes.git
+    $ heroku create --stack cedar --buildpack http://github.com/hone/heroku-buildpack-jsnes.git
 
     $ git push heroku master
     ...
