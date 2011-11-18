@@ -251,9 +251,7 @@ ERROR
       "['#{name}', '#{rom}']"
     end.join(",\n")
 
-    js = #{local_roms}
-
     topic("Writing index.html")
-    File.open('games.json', 'w') {|file| file.puts js }
+    File.open('games.json', 'w') {|file| file.puts local_roms }
   end
 end
