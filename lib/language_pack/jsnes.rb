@@ -250,6 +250,7 @@ ERROR
       name = rom.sub(/\.nes$/, '').sub(%r{^local-roms/}, '')
       "{'name': '#{name}', 'file':'#{rom}'}"
     end.join(",\n")
+    local_roms = '[' + local_roms + ']'
 
     topic("Writing index.html")
     File.open('games.json', 'w') {|file| file.puts local_roms }
