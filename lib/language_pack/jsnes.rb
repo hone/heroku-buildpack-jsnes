@@ -248,7 +248,7 @@ ERROR
   def generate_index_html
     local_roms = Dir['local-roms/*.nes'].map do |rom|
       name = rom.sub(/\.nes$/, '').sub(%r{^local-roms/}, '')
-      "{'name': '#{name}', 'file':'#{rom}'}"
+      "{'name': '#{name}', 'file':'#{rom}'},"
     end.join(",\n")
 
     topic("Writing index.html")
