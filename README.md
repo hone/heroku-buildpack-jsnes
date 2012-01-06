@@ -1,7 +1,7 @@
 Heroku buildpack: NES
 ======================
 
-This is a [Heroku buildpack](http://devcenter.heroku.com/articles/buildpack) for NES roms. It uses [jnes](https://github.com/bfirsh/jsnes) to run any NES roms that are pushed to a heroku application.
+This is a [Heroku buildpack](http://devcenter.heroku.com/articles/buildpack) for NES roms. It uses [jsnes](https://github.com/bfirsh/jsnes) to run any NES roms that are pushed to a heroku application.
 
 Usage
 -----
